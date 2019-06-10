@@ -31,5 +31,5 @@ php artisan postman:export
 This will create a `postman_collection.json` inside your `storage/app` folder. You are free to change the name of the file by specifying the filename as follows:
 
 ```
-php artisan laraman:export --name=my-app
+php artisan postman:export --name=MyAppName --url=http://localhost --port=8000 --api
 ```
