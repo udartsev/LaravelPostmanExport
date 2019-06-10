@@ -17,11 +17,7 @@
     ],
     "minimum-stability": "stable",
     "require": {
-        "illuminate/console": "~5.1",
-        "illuminate/routing": "~5.1",
         "ramsey/uuid": "^3",
-        "illuminate/filesystem": "~5.1",
-        "illuminate/support": "~5.1"
     },
     "autoload": {
         "psr-4": {
