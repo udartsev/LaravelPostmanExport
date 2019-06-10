@@ -1,6 +1,6 @@
 <?php
 
-namespace RLStudio\Laraman;
+namespace udartsev\laravel-postman-export;
 
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Filesystem\Filesystem;

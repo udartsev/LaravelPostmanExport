@@ -1,6 +1,6 @@
 <?php
 
-namespace RLStudio\Laraman;
+namespace udartsev\laravel-postman-export;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
