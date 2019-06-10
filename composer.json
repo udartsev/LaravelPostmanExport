@@ -1,11 +1,18 @@
 {
     "name": "udartsev/laravel-postman-export",
+    "type": "library",
     "description": "Export your Laravel routes to a Postman collection .json file",
+    "keywords": ["laravel","export","postman","collection"],
+    "homepage": "https://yourcompany.com",
     "license": "MIT",
     "authors": [
         {
             "name": "Vladimir Udartsev",
             "email": "v.udartsev@gmail.com"
+        },
+	 {
+            "name": "Leo Sjöberg",
+            "email": "leo@rlstudio.se"
         }
     ],
     "minimum-stability": "stable",
