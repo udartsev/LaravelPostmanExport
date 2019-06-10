@@ -1,0 +1,25 @@
+{
+    "name": "udartsev/laravel-postman-export",
+    "description": "Export your Laravel routes to a Postman collection .json file",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Vladimir Udartsev",
+            "email": "v.udartsev@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "illuminate/console": "~5.1",
+        "illuminate/routing": "~5.1",
+        "ramsey/uuid": "^3",
+        "illuminate/filesystem": "~5.1",
+        "illuminate/support": "~5.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "udartsev\\laravel-postman-export\\": "src/"
+        }
+    }
+
+}
