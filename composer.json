@@ -3,7 +3,7 @@
     "type": "library",
     "description": "Export your Laravel routes to a Postman collection .json file",
     "keywords": ["laravel","export","postman","collection"],
-    "homepage": "https://yourcompany.com",
+    "homepage": "https://github.com/udartsev/LaravelPostmanExport",
     "license": "MIT",
     "authors": [
         {
