@@ -1,6 +1,6 @@
 <?php
 
-namespace udartsev\laravel-postman-export;
+namespace udartsev\LaravelPostmanExport;
 
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Filesystem\Filesystem;
