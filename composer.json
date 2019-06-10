@@ -1,5 +1,5 @@
 {
-    "name": "udartsev/LaravelPostmanExport",
+    "name": "udartsev/laravel-postman-export",
     "type": "library",
     "description": "Export your Laravel routes to a Postman collection .json file",
     "keywords": ["laravel","export","postman","collection"],
