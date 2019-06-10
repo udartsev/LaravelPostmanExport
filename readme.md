@@ -17,7 +17,7 @@ composer require --dev udartsev/laravel-postman-export
 Add the service provider to your `providers` array in `config/app.php`
 
 ```php
-udartsev\laravel-postman-export\ServiceProvider::class,
+udartsev\laravel-postman-export\PostmanServiceProvider::class,
 ```
 
 That's all!

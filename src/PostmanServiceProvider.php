@@ -2,9 +2,9 @@
 
 namespace udartsev\laravel-postman-export;
 
-use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use Illuminate\Support\ServiceProvider;
 
-class ServiceProvider extends BaseServiceProvider
+class PostmanServiceProvider extends ServiceProvider
 {
     /**
      * Register the command.
