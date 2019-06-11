@@ -13,7 +13,7 @@ class ExportRoutesToPostman extends Command {
 	 *
 	 * @var string
 	 */
-	protected $signature = 'postman:export {--name} {--api} {--web} {--url=https://localhost} {--port=8000}';
+	protected $signature = 'postman:export {--api} {--web} {--url} {--port} {--name}';
 
 	/**
 	 * The console command description.
@@ -55,109 +55,106 @@ class ExportRoutesToPostman extends Command {
 	 */
 	public function handle() {
 		if (!$this->option('api') && !$this->option('web')) {
-			$this->info("Please, specify the type of export with flags.\nYou can use --api or --web.");
-		} else {
+			return $this->info("Please, specify the type of export with flags.\nYou can use --api or --web.");
+		}
 
-			if (!$this->option('name')) {$name = config('app.name') . '_postman';} else { $name = $this->option('name');}
+		if (!$this->option('name')) {$name = config('app.name') . '_postman';} else { $name = $this->option('name');}
+		if (!$this->option('url')) {$url = '{{' . config('app.name') . 'URL}}';} else { $url = $this->option('url');}
+		if (!$this->option('port')) {$port = '';} else { $url = $url . ':' . $this->option('port');}
+		if ($this->option('api')) {$routeType = 'api';}
+		if ($this->option('web')) {$routeType = 'web';}
 
-			$port = $this->option('port');
-			$url  = $this->option('url');
+		// Set the base data.
+		$routes = [
+			'variables' => [],
+			'info'      => [
+				'name'        => $name . '_' . $routeType,
+				'_postman_id' => Uuid::uuid4(),
+				'description' => '',
+				'schema'      => 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
+			],
+		];
 
-			// Set the base data.
-			$routes = [
-				'variables' => [],
-				'info'      => [
-					'name'        => $name,
-					'_postman_id' => Uuid::uuid4(),
-					'description' => '',
-					'schema'      => 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
-				],
-			];
+		foreach ($this->router->getRoutes() as $route) {
+			foreach ($route->methods as $method) {
+				if ('HEAD' == $method) {
+					continue;
+				}
 
-			foreach ($this->router->getRoutes() as $route) {
-				foreach ($route->methods as $method) {
-					if ('HEAD' == $method) {
-						continue;
-					}
+				//GETTING @PARAMs @VARs @DESCRIPTIONs from PhpDoc comments
+				$p = $this->getParams($route);
 
-					if ($this->option('url')) {
-						$url = $this->option('url') . ':' . $port . '/' . $route->uri();
-					} else { $url = url(':' . $port . '/' . $route->uri());}
-
-					//GETTING @PARAMs @VARs @DESCRIPTIONs from PhpDoc comments
-					$p = $this->getParams($route);
-
-					//API ROUTES
-					if ($this->option('api') && "api" == $route->middleware()[0]) {
-						$routeType = 'api';
-
-						$routes['item'][] = [
-							'name'     => $method . ' | ' . $route->uri(),
-							'request'  => [
-								'auth'        => '',
-								'method'      => strtoupper($method),
-								'header'      => [
-									[
-										'key'         => 'Content-Type',
-										'value'       => 'application/json',
-										'description' => $p['description'],
-									],
+				//API ROUTES
+				if ($this->option('api') && "api" == $route->middleware()[0]) {
+					$routes['item'][] = [
+						'name'     => $method . ' | ' . $route->uri(),
+						'request'  => [
+							'auth'        => '',
+							'method'      => strtoupper($method),
+							'header'      => [
+								[
+									'key'         => 'Content-Type',
+									'value'       => 'application/json',
+									'description' => $p['description'],
 								],
-								'body'        => [
-									'mode' => 'raw',
-									'raw'  => '{\n    \n}',
-								],
-								'url'         => [
-									'raw'   => $url,
-									'query' => $p['paramsArray'],
-								],
-								'description' => $p['description'],
 							],
-							'response' => [],
-						];
-					}
-					//WEB ROUTES
-					else if ($this->option('web') && "web" == $route->middleware()[0]) {
-						$routeType = 'web';
+							'body'        => [
+								'mode' => 'raw',
+								'raw'  => '{\n    \n}',
+							],
+							'url'         => [
+								'raw'   => $url . '/' . $route->uri(),
+								'host'  => $url . '/' . $route->uri(),
+								'query' => $p['paramsArray'],
+							],
+							'description' => $p['description'],
+						],
+						'response' => [],
+					];
+				}
+				//WEB ROUTES
+				else if ($this->option('web') && "web" == $route->middleware()[0]) {
+					$routeType = 'web';
 
-						$routes['item'][] = [
-							'name'     => $method . ' | ' . $route->uri(),
-							'request'  => [
-								'url'         => url(':' . $port . '/' . $route->uri()),
-								'params'      => [
-									'key'         => '',
-									'value'       => '',
-									'description' => '',
-								],
-								'method'      => strtoupper($method),
-								'header'      => [
-									[
-										'key'         => 'Content-Type',
-										'value'       => 'text/html',
-										'description' => '',
-									],
-								],
-								'body'        => [
-									'mode' => 'raw',
-									'raw'  => '{\n    \n}',
-								],
+					$routes['item'][] = [
+						'name'     => $method . ' | ' . $route->uri(),
+						'request'  => [
+							'url'         => $url . '/' . $route->uri(),
+							'params'      => [
+								'key'         => '',
+								'value'       => '',
 								'description' => '',
 							],
-							'response' => [],
-						];
-					}
+							'method'      => strtoupper($method),
+							'header'      => [
+								[
+									'key'         => 'Content-Type',
+									'value'       => 'text/html',
+									'description' => '',
+								],
+							],
+							'body'        => [
+								'mode' => 'raw',
+								'raw'  => '{\n    \n}',
+							],
+							'description' => '',
+						],
+						'response' => [],
+					];
 				}
 			}
+		}
 
-			if (!$this->files->put($name . '_' . $routeType . '.json', json_encode($routes))) {
-				$this->error('Export failed');
-			} else {
-				$this->info('Routes exported!');
-			}
+		if (!$this->files->put($name . '_' . $routeType . '.json', json_encode($routes))) {
+			$this->error('Export failed');
+		} else {
+			$this->info('Routes exported!');
 		}
 	}
 
-	private function getParams($route) {
+	public function getParams($route) {
+		if (empty($route->action['controller'])) {return;}
+
 		$controller = $route->action['controller'];
 
 		$file = str_replace('\\', '/', $controller);
@@ -244,7 +241,7 @@ class ExportRoutesToPostman extends Command {
 		return $p;
 	}
 
-	private function cleanString($string) {
+	public function cleanString($string) {
 		$string = str_replace('*', '', $string); // Replaces
 		$string = str_replace('#', '', $string); // Replaces
 		$string = str_replace('  ', '', $string); // Replaces
@@ -252,5 +249,5 @@ class ExportRoutesToPostman extends Command {
 		$string = preg_replace('/[\n\t*]/', '', $string); // Removes special chars.
 		return trim($string);
 	}
-}
+};
 

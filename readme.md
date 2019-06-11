@@ -38,17 +38,18 @@ php artisan postman:export --name=MyAppName --url=http://localhost --port=8000 -
 
 ### phpdoc Code rules
 #### @var
-'class Foo
+`class Foo
 {
   /**
    * @var string $name        Should contain a description
    * @var string $description Should contain a description
    */
   protected $name, $description;
-}'
+}`
 
 #### @param
-' /**
+`
+/**
   * Counts the number of items in the provided array.
   *
   * @param mixed[] $items Array structure to count the elements of.
@@ -58,16 +59,17 @@ php artisan postman:export --name=MyAppName --url=http://localhost --port=8000 -
  function count(array $items)
  {
      <...>
- }'
+ }
+ `
  
 #### @return
-'/**
+`/**
   * @return integer Indicates the number of items.
   */
  function count()
  {
      <...>
- }'
+ }`
  
 #### @description
 
