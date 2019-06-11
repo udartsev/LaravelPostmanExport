@@ -13,7 +13,7 @@ class ExportRoutesToPostman extends Command {
 	 *
 	 * @var string
 	 */
-	protected $signature = 'postman:export {--name=postman_collection} {--api} {--web} {--url=https://localhost} {--port=8000}';
+	protected $signature = 'postman:export {--name} {--api} {--web} {--url=https://localhost} {--port=8000}';
 
 	/**
 	 * The console command description.
@@ -57,9 +57,9 @@ class ExportRoutesToPostman extends Command {
 		if (!$this->option('api') && !$this->option('web')) {
 			$this->info("Please, specify the type of export with flags.\nYou can use --api or --web.");
 		} else {
-			//if ($this->option('name')) {$name = $this->option('name');} else { $name = config('app.name') . '_postman';}
 
-			$name = $this->option('name');
+			if (!$this->option('name')) {$name = config('app.name') . '_postman';} else { $name = $this->option('name');}
+
 			$port = $this->option('port');
 			$url  = $this->option('url');
 
@@ -84,38 +84,42 @@ class ExportRoutesToPostman extends Command {
 						$url = $this->option('url') . ':' . $port . '/' . $route->uri();
 					} else { $url = url(':' . $port . '/' . $route->uri());}
 
+					//GETTING @PARAMs @VARs @DESCRIPTIONs from PhpDoc comments
 					$p = $this->getParams($route);
-					if (!isset($p['description'])) {$p['description'] = '';}
 
 					//API ROUTES
 					if ($this->option('api') && "api" == $route->middleware()[0]) {
+						$routeType = 'api';
+
 						$routes['item'][] = [
 							'name'     => $method . ' | ' . $route->uri(),
 							'request'  => [
-								'auth'   => '',
-								'method' => strtoupper($method),
-								'header' => [
+								'auth'        => '',
+								'method'      => strtoupper($method),
+								'header'      => [
 									[
 										'key'         => 'Content-Type',
 										'value'       => 'application/json',
-										'description' => '',
+										'description' => $p['description'],
 									],
 								],
-								'body'   => [
+								'body'        => [
 									'mode' => 'raw',
 									'raw'  => '{\n    \n}',
 								],
-								'url'    => [
+								'url'         => [
 									'raw'   => $url,
 									'query' => $p['paramsArray'],
 								],
-								//'description' => $p['description'],
+								'description' => $p['description'],
 							],
 							'response' => [],
 						];
 					}
 					//WEB ROUTES
 					else if ($this->option('web') && "web" == $route->middleware()[0]) {
+						$routeType = 'web';
+
 						$routes['item'][] = [
 							'name'     => $method . ' | ' . $route->uri(),
 							'request'  => [
@@ -142,12 +146,10 @@ class ExportRoutesToPostman extends Command {
 							'response' => [],
 						];
 					}
-
-					unset($p, $paramsArray);
 				}
 			}
 
-			if (!$this->files->put($name . '.json', json_encode($routes))) {
+			if (!$this->files->put($name . '_' . $routeType . '.json', json_encode($routes))) {
 				$this->error('Export failed');
 			} else {
 				$this->info('Routes exported!');
@@ -188,51 +190,57 @@ class ExportRoutesToPostman extends Command {
 
 				//@description
 				preg_match_all("~@description([\s\S]*? )([\s\S]*?)\\@~", $comment, $descriptions, PREG_PATTERN_ORDER);
-				foreach ($descriptions as $key => $description) {
-					if (!empty($description) && preg_match("~@description~", $description[0])) {
-						$description      = $this->cleanString($description[0]);
-						$p['description'] = trim(str_replace('@description', '', $description));
-					}
-				}
+				if (!empty(end($descriptions)[0])) {
+					$description      = $this->cleanString(end($descriptions)[0]);
+					$p['description'] = trim($description);
+				} else { $p['description'] = '';}
 
 				//@param
-				$c = 0;
-				preg_match_all("~@param([\s\S]*? )([\s\S]*?)\\@~", $comment, $params, PREG_PATTERN_ORDER);
-				foreach ($params as $key => $param) {
-					if (!empty($param) && preg_match("~@param~", $param[0])) {
-						$param                       = $this->cleanString($param[0]);
-						$param                       = trim(str_replace('@param', '', $param));
-						$param                       = explode('-', $param);
-						$p['paramsArray'][$c]['key'] = $param[0];
-						if (isset($param[1])) {
-							$p['paramsArray'][$c]['description'] = trim($param[1]);
-						} else { $p['paramsArray'][$c]['description'] = '';}
-						$c++;
+				preg_match_all("~@param(.*)~", $comment, $params, PREG_PATTERN_ORDER);
+				if (!empty(end($params)[0])) {
+					foreach ($params[1] as $key => $param) {
+						$param = explode(' ', $this->cleanString($param));
+						//type
+						$p['paramsArray'][$key]['type'] = array_shift($param);
+						//name
+						$p['paramsArray'][$key]['key'] = array_shift($param);
+						//description
+						$p['paramsArray'][$key]['description'] = implode(' ', $param);
 					}
-				}
+				} else { $p['paramsArray'] = '';}
+
+				//@var
+				preg_match_all("~@var(.*)~", $comment, $vars, PREG_PATTERN_ORDER);
+				if (!empty(end($vars)[0])) {
+					foreach ($vars[1] as $key => $var) {
+						$var = explode(' ', $this->cleanString($var));
+						//type
+						$p['varsArray'][$key]['type'] = array_shift($var);
+						//name
+						$p['varsArray'][$key]['key'] = array_shift($var);
+						//description
+						$p['varsArray'][$key]['description'] = implode(' ', $var);
+					}
+				} else { $p['varsArray'] = '';}
 
 				//@return
-				preg_match_all("~@return([\s\S]*? )([\s\S]*?)\\@~", $comment, $returns, PREG_PATTERN_ORDER);
-				foreach ($returns as $key => $return) {
-					if (!empty($return) && preg_match("~@return~", $return[0])) {
-						$return        = $this->cleanString($return[0]);
-						$p['response'] = trim(str_replace('@return', '', $value));
-					}
-				}
+				preg_match_all("~@return(.*)~", $comment, $returns, PREG_PATTERN_ORDER);
+				if (!empty(end($returns)[0])) {
+					$p['return'] = $this->cleanString($returns[1][0]);
+				} else { $p['return'] = '';}
 			}
 
 			unset($param, $value, $description, $c);
 		}
 
 		if (!isset($p) || empty($p)) {
-			$p['key']         = '';
-			$p['value']       = '';
+			$p['return']      = '';
 			$p['response']    = '';
 			$p['param']       = '';
 			$p['description'] = '';
-			$p['paramsArray'] = [];
+			$p['paramsArray'] = '';
+			$p['varsArray']   = '';
 		}
-
 		return $p;
 	}
 
@@ -241,7 +249,8 @@ class ExportRoutesToPostman extends Command {
 		$string = str_replace('#', '', $string); // Replaces
 		$string = str_replace('  ', '', $string); // Replaces
 		if (substr($string, -1) == '@') {$string = substr_replace($string, "", -1);} // Removes last @
-		return preg_replace('/[^A-Za-z0-9\ @-]/', '', $string); // Removes special chars.
+		$string = preg_replace('/[\n\t*]/', '', $string); // Removes special chars.
+		return trim($string);
 	}
 }
 
