@@ -7,6 +7,8 @@ Based on [Laraman](https://github.com/RL-Studio/laraman)
 2. Artisan consol commands
 3. Can post project **URL** address via console
 4. Basic file name change to **postman_collection.json**
+5. Exporting @descriptions
+6. Exporting @params
 
 ## Installation
 Install via composer:
@@ -33,3 +35,14 @@ This will create a `postman_collection.json` inside your `storage/app` folder. Y
 ```
 php artisan postman:export --name=MyAppName --url=http://localhost --port=8000 --api
 ```
+
+### Code rules
+
+/**
+ * @param {param name} - {param description}
+ * @description {function description}
+ */
+
+`funcrion MyFunction({param name}){
+	foo;
+}`
