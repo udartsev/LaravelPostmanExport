@@ -250,4 +250,3 @@ class ExportRoutesToPostman extends Command {
 		return trim($string);
 	}
 };
-
