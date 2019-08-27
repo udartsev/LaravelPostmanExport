@@ -114,8 +114,6 @@ class ExportRoutesToPostman extends Command {
 				}
 				//WEB ROUTES
 				else if ($this->option('web') && "web" == $route->middleware()[0]) {
-					$routeType = 'web';
-
 					$routes['item'][] = [
 						'name'     => $method . ' | ' . $route->uri(),
 						'request'  => [
@@ -137,7 +135,7 @@ class ExportRoutesToPostman extends Command {
 								'mode' => 'raw',
 								'raw'  => '{\n    \n}',
 							],
-							'description' => '',
+							'description' => $p['description'],
 						],
 						'response' => [],
 					];
