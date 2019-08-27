@@ -1,13 +1,11 @@
-# Laraman
-
-Based on [Laraman](https://github.com/RL-Studio/laraman)
+# Laravel Postman export
 
 **Updates:** 
 1. Postman collection scheme
 2. Artisan consol commands
 3. Can post project **URL** address via console
 4. Basic file name change to **postman_collection.json**
-5. Exporting @descriptions
+5. Exporting @descriptions / @desc / @des
 6. Exporting @params
 
 ## Installation

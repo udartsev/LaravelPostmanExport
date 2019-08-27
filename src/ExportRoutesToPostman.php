@@ -145,10 +145,12 @@ class ExportRoutesToPostman extends Command {
 			}
 		}
 
-		if (!$this->files->put($name . '_' . $routeType . '.json', json_encode($routes))) {
+		$exportFile = $name . '_' . $routeType . '.json';
+
+		if (!$this->files->put($exportFile, json_encode($routes))) {
 			$this->error('Export failed');
 		} else {
-			$this->info('Routes exported!');
+			$this->info('Routes exported! Filename: ' . $exportFile);
 		}
 	}
 
